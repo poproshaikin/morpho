@@ -29,4 +29,8 @@ export class Language {
     generateSentence() {
         return generateSentence(this.lexicon, this.syntax);
     }
+
+    analyzeSentence() {
+
+    }
 }

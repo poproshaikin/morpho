@@ -20,6 +20,14 @@ export function pickWordByPartOfSpeech(lexicon: Lexicon, partOfSpeech: PartOfSpe
     return words[randomIndex];
 }
 
+export function pickWordsByPartOfSpeech(lexicon: Lexicon, partOfSpeech: PartOfSpeech, count: number): string[] {
+    const words = [] as string[];
+    for (let i = 0; i < count; i++) {
+        words.push(pickWordByPartOfSpeech(lexicon, partOfSpeech));
+    }
+    return words;
+}
+
 export function generateLexiconWithParams(config: LexiconConfig): Lexicon {
     const rootsByCategory: Record<PartOfSpeech, string[]> = {
         'Noun': generateWords(config.rootsPerCategory['Noun']),

@@ -1,4 +1,4 @@
-import {Lexicon, PartOfSpeech, pickWordByPartOfSpeech} from "./lexicon";
+import {Lexicon, PartOfSpeech, pickWordByPartOfSpeech, pickWordsByPartOfSpeech} from "./lexicon";
 
 export const Constituents = ['Subject', 'Predicate', 'DirectObject'] as const;
 export type Constituent = typeof Constituents[number];
@@ -23,8 +23,11 @@ export function generateSyntaxConfig(): SyntaxConfig {
 }
 
 export function generateSentence(lexicon: Lexicon, syntax: Syntax): string[] {
+    const calculateConstituentsCount = () => Math.random() < 0.5 ? 1 : 2; // Randomly choose 1 or 2 words for each constituent;
+
     return syntax.order.map(constituent => {
         const partOfSpeech = constituentToPartOfSpeech[constituent];
-        return pickWordByPartOfSpeech(lexicon, partOfSpeech);
+        const consCount = calculateConstituentsCount()
+        return pickWordsByPartOfSpeech(lexicon, partOfSpeech, consCount).join(' ');
     });
 }
