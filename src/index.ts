@@ -1,12 +1,13 @@
 import {Language} from "./language";
 
 const language = Language.generate();
-
-
 const words = language.generateSentence();
-const word = words.join(' ');
+const sentence = words.map(word => word.form).join(' ');
 
-console.log(word);
+console.log("full sentence: " + sentence);
+console.log(JSON.stringify(words, null, 2));
 console.log();
 console.log(language.lexicon)
 console.log(language.syntax)
+console.log(language.morphology)
+
