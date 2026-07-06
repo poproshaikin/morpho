@@ -1,13 +1,13 @@
 import {Lexicon, LexiconConfig, makeLexiconWithParams, generateLexiconConfig} from "./lexicon";
-import {analyzeSentence, generateSentence, generateSyntaxConfig, Syntax} from "./syntax";
+import {generateSentence, generateSyntaxConfig, Syntax} from "./syntax";
 import {generateMorphology, Morphology} from "./morphology";
+import {AlignmentPattern} from "./grammar";
 
 export interface LanguageParams {
     rootsPerCategory: LexiconConfig['rootsPerCategory'],
     order: Syntax['order'],
-    cases: Morphology['cases'],
-    caseMarkers: Morphology['caseMarkers'],
-    caseMarkingByCase: Morphology['caseMarkingByCase'],
+    alignment: AlignmentPattern,
+    categories: Morphology['categories'],
 }
 
 export class Language {
@@ -33,17 +33,12 @@ export class Language {
         return Language.makeWithParams({
             rootsPerCategory: lexiconConfig.rootsPerCategory,
             order: syntaxConfig.order,
-            cases: morphology.cases,
-            caseMarkers: morphology.caseMarkers,
-            caseMarkingByCase: morphology.caseMarkingByCase,
+            categories: morphology.categories,
+            alignment: morphology.alignment
         });
     }
 
     generateSentence() {
         return generateSentence(this.lexicon, this.syntax, this.morphology);
-    }
-
-    analyzeSentence(sentence: string) {
-        return analyzeSentence(sentence, this.lexicon, this.syntax);
     }
 }
