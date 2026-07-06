@@ -9,5 +9,5 @@ console.log(JSON.stringify(words, null, 2));
 console.log();
 console.log(language.lexicon)
 console.log(language.syntax)
-console.log(language.morphology)
+console.log(JSON.stringify(language.morphology, null, 2));
 

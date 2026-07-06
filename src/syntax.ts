@@ -1,7 +1,8 @@
 import {Lexicon, pickWordsByPartOfSpeech} from "./lexicon";
 import {Morphology, Alignments, inflectWord} from "./morphology";
 import {Constituent, Constituents, PartOfSpeech, Word} from "./types";
-import {getCategoriesFor, GrammaticalCategories, GrammaticalCategoryName} from "./grammar";
+import {getCategoriesFor, CategoryName} from "./grammar";
+import {pickRandom} from "./utils";
 
 export interface Syntax {
     order: Constituent[];
@@ -33,41 +34,26 @@ export function generateSentence(lexicon: Lexicon, syntax: Syntax, morphology: M
         const constituent = syntax.order[i];
         const partOfSpeech = ConstituentToPartOfSpeech[constituent];
         const categories = getCategoriesFor(partOfSpeech);
-        const inflections = Object.keys(morphology.categories).map(categoryName => {
-            return morphology.categories[categoryName]!;
-        });
 
         const consCount = calculateConstituentsCount();
         const rawWords = pickWordsByPartOfSpeech(lexicon, partOfSpeech, consCount);
         const inflicted: Word[] = rawWords.map(root => {
-            const inflectionsToApply = categories.map(name => {
-                return inflections.;
-            })
+            const inflectionsToApply: { category: CategoryName, value: string }[] = [];
 
-            let result = root;
-            for (const category of categories) {
-                result = inflectWord(result, )
+            for (const categoryName of categories) {
+                const categoryMorphology = morphology.categories[categoryName];
+                if (!categoryMorphology) continue;
+
+                const alignmentValue = morphology.alignment.constituentToValue[constituent];
+                const value = alignmentValue && categoryMorphology[alignmentValue]
+                    ? alignmentValue
+                    : pickRandom(Object.keys(categoryMorphology));
+
+                inflectionsToApply.push({ category: categoryName, value });
             }
 
-
-            // if (partOfSpeech === 'Noun') {
-            //     const grammaticalCase = constituentToCase[constituent]!;
-            //     const declined = declineNoun(root, grammaticalCase, morphology);
-            //     return {
-            //         root,
-            //         form: declined,
-            //         grammaticalCase,
-            //         partOfSpeech,
-            //         constituent
-            //     };
-            // }
-
-            return {
-                root,
-                form: root,
-                constituent,
-                partOfSpeech
-            };
+            const form = inflectWord(root, inflectionsToApply, morphology);
+            return { root, form, constituent, partOfSpeech };
         })
 
         inflicted.forEach(word => words.push(word));

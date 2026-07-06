@@ -6,7 +6,7 @@ export type GrammaticalCategory = {
     appliesTo: PartOfSpeech[];
 }
 
-export const GrammaticalCategories = {
+export const Categories = {
     'Case': {
         name: 'Case',
         values: ['Nominative', 'Genitive', 'Dative', 'Accusative', 'Ergative', 'Absolutive'] as const,
@@ -19,12 +19,11 @@ export const GrammaticalCategories = {
     } as const
 } satisfies Record<string, GrammaticalCategory>;
 
+export type CategoryName = keyof typeof Categories;
 
-export type GrammaticalCategoryName = keyof typeof GrammaticalCategories;
-
-export function getCategoriesFor(pos: PartOfSpeech): GrammaticalCategoryName[] {
-    return (Object.keys(GrammaticalCategories) as GrammaticalCategoryName[])
-        .filter(name => GrammaticalCategories[name].appliesTo.includes(pos))
+export function getCategoriesFor(pos: PartOfSpeech): CategoryName[] {
+    return (Object.keys(Categories) as CategoryName[])
+        .filter(name => Categories[name].appliesTo.includes(pos))
 }
 
 export type AlignmentPattern = {
