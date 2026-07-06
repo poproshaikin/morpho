@@ -1,8 +1,8 @@
 import {Categories, AlignmentPattern, CategoryInflection, CategoryName} from "./grammar";
 import {pickRandom, toBeOrNotToBe} from "./utils";
 import {MarkingStrategies, MarkingStrategy} from "./types";
-import {constructSyllable} from "./phonology";
-import {SyllableSchemes} from "./vocabulary";
+import {generateSyllable, Phonology} from "./phonology";
+import {generateSentence} from "./syntax";
 
 export const Alignments = {
     'NominativeAccusative': {
@@ -31,7 +31,7 @@ export interface Morphology {
     categories: Partial<Record<string, Record<string, CategoryInflection>>> // { 'Case': { 'Nominative': .... 'Genitive': ... } }
 }
 
-export function generateMorphology(): Morphology {
+export function generateMorphology(phono: Phonology): Morphology {
     const pickRandomCategories = () => {
         const categories: string[] = [];
         Object.keys(Categories).forEach(name => {
@@ -73,7 +73,7 @@ export function generateMorphology(): Morphology {
         const markers: Partial<Record<MarkingStrategy, string>> = {};
 
         for (const strategy of strategies) {
-            markers[strategy] = constructSyllable(pickRandom(SyllableSchemes));
+            markers[strategy] = generateSyllable(phono);
         }
 
         return markers;

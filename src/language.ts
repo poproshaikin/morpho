@@ -2,6 +2,7 @@ import {Lexicon, LexiconConfig, makeLexiconWithParams, generateLexiconConfig} fr
 import {generateSentence, generateSyntaxConfig, Syntax} from "./syntax";
 import {generateMorphology, Morphology} from "./morphology";
 import {AlignmentPattern} from "./grammar";
+import {generatePhonology, Phonology} from "./phonology";
 
 export interface LanguageParams {
     rootsPerCategory: LexiconConfig['rootsPerCategory'],
@@ -12,30 +13,21 @@ export interface LanguageParams {
 
 export class Language {
     constructor(
+        public phonology: Phonology,
         public lexicon: Lexicon,
         public syntax: Syntax,
         public morphology: Morphology) {
     }
 
-    static makeWithParams(params: LanguageParams) {
-        const lexicon = makeLexiconWithParams({ rootsPerCategory: params.rootsPerCategory });
-        const syntax: Syntax = { order: params.order };
-        const morphology = generateMorphology();
-
-        return new Language(lexicon, syntax, morphology);
-    }
-
     static generate() {
+        const phonology = generatePhonology();
         const lexiconConfig = generateLexiconConfig();
         const syntaxConfig = generateSyntaxConfig();
-        const morphology = generateMorphology();
+        const lexicon = makeLexiconWithParams({ rootsPerCategory: lexiconConfig.rootsPerCategory }, phonology);
+        const syntax: Syntax = { order: syntaxConfig.order };
+        const morphology = generateMorphology(phonology);
 
-        return Language.makeWithParams({
-            rootsPerCategory: lexiconConfig.rootsPerCategory,
-            order: syntaxConfig.order,
-            categories: morphology.categories,
-            alignment: morphology.alignment
-        });
+        return new Language(phonology, lexicon, syntax, morphology);
     }
 
     generateSentence() {

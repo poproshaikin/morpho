@@ -1,5 +1,5 @@
-import {generateWords} from "./phonology";
 import {PartOfSpeech} from "./types";
+import {generateWords, Phonology} from "./phonology";
 
 export type LexiconConfig = {
     rootsPerCategory: Record<PartOfSpeech, number>;
@@ -26,12 +26,12 @@ export function pickWordsByPartOfSpeech(lexicon: Lexicon, partOfSpeech: PartOfSp
     return words;
 }
 
-export function makeLexiconWithParams(config: LexiconConfig): Lexicon {
+export function makeLexiconWithParams(config: LexiconConfig, phono: Phonology): Lexicon {
     const rootsByCategory: Record<PartOfSpeech, string[]> = {
-        'Noun': generateWords(config.rootsPerCategory['Noun']),
-        'Verb': generateWords(config.rootsPerCategory['Verb']),
-        'Adjective': generateWords(config.rootsPerCategory['Adjective']),
-        'Adverb': generateWords(config.rootsPerCategory['Adverb']),
+        'Noun': generateWords(config.rootsPerCategory['Noun'], phono),
+        'Verb': generateWords(config.rootsPerCategory['Verb'], phono),
+        'Adjective': generateWords(config.rootsPerCategory['Adjective'], phono),
+        'Adverb': generateWords(config.rootsPerCategory['Adverb'], phono),
     };
 
     return {

@@ -1,4 +1,6 @@
 import {Language} from "./language";
+import {generateMorphology} from "./morphology";
+import {generatePhonology} from "./phonology";
 
 const language = Language.generate();
 const words = language.generateSentence();
@@ -10,4 +12,5 @@ console.log();
 console.log(language.lexicon)
 console.log(language.syntax)
 console.log(JSON.stringify(language.morphology, null, 2));
-
+console.log('phonology')
+console.log(JSON.stringify(generatePhonology(), null, 2));
