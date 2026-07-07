@@ -25,8 +25,6 @@ const ConstituentToPartOfSpeech: Record<Constituent, PartOfSpeech> = {
 }
 
 export function generateSentence(lexicon: Lexicon, syntax: Syntax, morphology: Morphology): Word[] {
-    const calculateConstituentsCount = () => Math.random() < 0.5 ? 1 : 2; // Randomly choose 1 or 2 words for each constituent;
-
     const words: Word[] = [];
 
     for (let i = 0; i < syntax.order.length; i++) {
@@ -34,8 +32,7 @@ export function generateSentence(lexicon: Lexicon, syntax: Syntax, morphology: M
         const partOfSpeech = ConstituentToPartOfSpeech[constituent];
         const categories = getCategoriesFor(partOfSpeech);
 
-        const consCount = calculateConstituentsCount();
-        const rawWords = pickWordsByPartOfSpeech(lexicon, partOfSpeech, consCount);
+        const rawWords = pickWordsByPartOfSpeech(lexicon, partOfSpeech, 1);
         const inflicted: Word[] = rawWords.map(root => {
             const inflectionsToApply: { category: CategoryName, value: string }[] = [];
 
