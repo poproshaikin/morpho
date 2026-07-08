@@ -1,268 +1,7 @@
 import {pickRandom, pickRandomCount, pickSubset, toBeOrNotToBe} from "./utils";
-import {PWord} from "./vocabulary";
+import {Phoneme, PWord} from "./vocabulary";
+import {LanguageProfiles} from "./profiles";
 
-export type PhonemeType = 'alveolar' | 'palatal' | 'uvular' | 'pharyngeal' | 'retroflex' | 'fricative' | 'nasal' | 'approximant';
-
-export type Phoneme = {
-    type: PhonemeType;
-    ipa: string;
-    glyph: string;
-}
-
-export type PhonemeProfile = {
-    consonants: Phoneme[]
-    vowels: Phoneme[];
-}
-
-export const PhonemeProfiles: Record<string, PhonemeProfile> = {
-    Turkic: {
-        consonants: [
-            { ipa: 'p',  glyph: 'p',  type: 'alveolar'    },
-            { ipa: 'b',  glyph: 'b',  type: 'alveolar'    },
-            { ipa: 't',  glyph: 't',  type: 'alveolar'    },
-            { ipa: 'd',  glyph: 'd',  type: 'alveolar'    },
-            { ipa: 'k',  glyph: 'k',  type: 'alveolar'    },
-            { ipa: 'g',  glyph: 'g',  type: 'alveolar'    },
-            { ipa: 'tʃ', glyph: 'ch', type: 'palatal'     },
-            { ipa: 'dʒ', glyph: 'j',  type: 'palatal'     },
-            { ipa: 'f',  glyph: 'f',  type: 'fricative'   },
-            { ipa: 'v',  glyph: 'v',  type: 'fricative'   },
-            { ipa: 's',  glyph: 's',  type: 'fricative'   },
-            { ipa: 'z',  glyph: 'z',  type: 'fricative'   },
-            { ipa: 'ʃ',  glyph: 'sh', type: 'palatal'     },
-            { ipa: 'ʒ',  glyph: 'zh', type: 'palatal'     },
-            { ipa: 'h',  glyph: 'h',  type: 'fricative'   },
-            { ipa: 'ɣ',  glyph: 'gh', type: 'fricative'   },
-            { ipa: 'm',  glyph: 'm',  type: 'nasal'       },
-            { ipa: 'n',  glyph: 'n',  type: 'nasal'       },
-            { ipa: 'ŋ',  glyph: 'ng', type: 'nasal'       },
-            { ipa: 'l',  glyph: 'l',  type: 'approximant' },
-            { ipa: 'r',  glyph: 'r',  type: 'approximant' },
-            { ipa: 'j',  glyph: 'y',  type: 'palatal'     },
-            { ipa: 'q',  glyph: 'q',  type: 'uvular'      },
-        ],
-        vowels: [
-            { ipa: 'a', glyph: 'a', type: 'approximant' },
-            { ipa: 'e', glyph: 'e', type: 'approximant' },
-            { ipa: 'i', glyph: 'i', type: 'approximant' },
-            { ipa: 'ɯ', glyph: 'ı', type: 'approximant' },
-            { ipa: 'o', glyph: 'o', type: 'approximant' },
-            { ipa: 'u', glyph: 'u', type: 'approximant' },
-            { ipa: 'ø', glyph: 'ö', type: 'approximant' },
-            { ipa: 'y', glyph: 'ü', type: 'approximant' },
-        ],
-    },
-    Romance: {
-        consonants: [
-            { ipa: 'p',  glyph: 'p',  type: 'alveolar'    },
-            { ipa: 'b',  glyph: 'b',  type: 'alveolar'    },
-            { ipa: 't',  glyph: 't',  type: 'alveolar'    },
-            { ipa: 'd',  glyph: 'd',  type: 'alveolar'    },
-            { ipa: 'k',  glyph: 'k',  type: 'alveolar'    },
-            { ipa: 'g',  glyph: 'g',  type: 'alveolar'    },
-            { ipa: 'tʃ', glyph: 'ch', type: 'palatal'     },
-            { ipa: 'dʒ', glyph: 'j',  type: 'palatal'     },
-            { ipa: 'f',  glyph: 'f',  type: 'fricative'   },
-            { ipa: 'v',  glyph: 'v',  type: 'fricative'   },
-            { ipa: 's',  glyph: 's',  type: 'fricative'   },
-            { ipa: 'z',  glyph: 'z',  type: 'fricative'   },
-            { ipa: 'ʃ',  glyph: 'sh', type: 'palatal'     },
-            { ipa: 'ʒ',  glyph: 'zh', type: 'palatal'     },
-            { ipa: 'm',  glyph: 'm',  type: 'nasal'       },
-            { ipa: 'n',  glyph: 'n',  type: 'nasal'       },
-            { ipa: 'ɲ',  glyph: 'ñ',  type: 'palatal'     },
-            { ipa: 'l',  glyph: 'l',  type: 'approximant' },
-            { ipa: 'ʎ',  glyph: 'll', type: 'palatal'     },
-            { ipa: 'r',  glyph: 'r',  type: 'approximant' },
-            { ipa: 'ʀ',  glyph: 'rh', type: 'uvular'      },
-            { ipa: 'j',  glyph: 'y',  type: 'palatal'     },
-            { ipa: 'w',  glyph: 'w',  type: 'approximant' },
-        ],
-        vowels: [
-            { ipa: 'a', glyph: 'a', type: 'approximant' },
-            { ipa: 'e', glyph: 'e', type: 'approximant' },
-            { ipa: 'ɛ', glyph: 'è', type: 'approximant' },
-            { ipa: 'i', glyph: 'i', type: 'approximant' },
-            { ipa: 'o', glyph: 'o', type: 'approximant' },
-            { ipa: 'ɔ', glyph: 'ò', type: 'approximant' },
-            { ipa: 'u', glyph: 'u', type: 'approximant' },
-            { ipa: 'y', glyph: 'ü', type: 'approximant' },
-            { ipa: 'ø', glyph: 'œ', type: 'approximant' },
-        ],
-    },
-
-    Greek: {
-        consonants: [
-            { ipa: 'p',  glyph: 'p',  type: 'alveolar'    },
-            { ipa: 'b',  glyph: 'b',  type: 'alveolar'    },
-            { ipa: 't',  glyph: 't',  type: 'alveolar'    },
-            { ipa: 'd',  glyph: 'd',  type: 'alveolar'    },
-            { ipa: 'k',  glyph: 'k',  type: 'alveolar'    },
-            { ipa: 'g',  glyph: 'g',  type: 'alveolar'    },
-            { ipa: 'f',  glyph: 'f',  type: 'fricative'   },
-            { ipa: 'v',  glyph: 'v',  type: 'fricative'   },
-            { ipa: 'θ',  glyph: 'th', type: 'fricative'   },
-            { ipa: 'ð',  glyph: 'dh', type: 'fricative'   },
-            { ipa: 's',  glyph: 's',  type: 'fricative'   },
-            { ipa: 'z',  glyph: 'z',  type: 'fricative'   },
-            { ipa: 'x',  glyph: 'x',  type: 'fricative'   },
-            { ipa: 'ɣ',  glyph: 'gh', type: 'fricative'   },
-            { ipa: 'm',  glyph: 'm',  type: 'nasal'       },
-            { ipa: 'n',  glyph: 'n',  type: 'nasal'       },
-            { ipa: 'ŋ',  glyph: 'ng', type: 'nasal'       },
-            { ipa: 'l',  glyph: 'l',  type: 'approximant' },
-            { ipa: 'r',  glyph: 'r',  type: 'approximant' },
-        ],
-        vowels: [
-            { ipa: 'a', glyph: 'a', type: 'approximant' },
-            { ipa: 'e', glyph: 'e', type: 'approximant' },
-            { ipa: 'i', glyph: 'i', type: 'approximant' },
-            { ipa: 'o', glyph: 'o', type: 'approximant' },
-            { ipa: 'u', glyph: 'u', type: 'approximant' },
-        ],
-    },
-
-    Slavic: {
-        consonants: [
-            { ipa: 'p',  glyph: 'p',  type: 'alveolar'    },
-            { ipa: 'b',  glyph: 'b',  type: 'alveolar'    },
-            { ipa: 't',  glyph: 't',  type: 'alveolar'    },
-            { ipa: 'd',  glyph: 'd',  type: 'alveolar'    },
-            { ipa: 'k',  glyph: 'k',  type: 'alveolar'    },
-            { ipa: 'g',  glyph: 'g',  type: 'alveolar'    },
-            { ipa: 'ts', glyph: 'c',  type: 'alveolar'    },
-            { ipa: 'tʃ', glyph: 'č',  type: 'palatal'     },
-            { ipa: 'dʒ', glyph: 'dž', type: 'palatal'     },
-            { ipa: 'f',  glyph: 'f',  type: 'fricative'   },
-            { ipa: 'v',  glyph: 'v',  type: 'fricative'   },
-            { ipa: 's',  glyph: 's',  type: 'fricative'   },
-            { ipa: 'z',  glyph: 'z',  type: 'fricative'   },
-            { ipa: 'ʃ',  glyph: 'š',  type: 'palatal'     },
-            { ipa: 'ʒ',  glyph: 'ž',  type: 'palatal'     },
-            { ipa: 'ɕ',  glyph: 'ś',  type: 'palatal'     },
-            { ipa: 'x',  glyph: 'h',  type: 'fricative'   },
-            { ipa: 'm',  glyph: 'm',  type: 'nasal'       },
-            { ipa: 'n',  glyph: 'n',  type: 'nasal'       },
-            { ipa: 'ɲ',  glyph: 'ń',  type: 'palatal'     },
-            { ipa: 'l',  glyph: 'l',  type: 'approximant' },
-            { ipa: 'ʎ',  glyph: 'lj', type: 'palatal'     },
-            { ipa: 'r',  glyph: 'r',  type: 'approximant' },
-            { ipa: 'j',  glyph: 'j',  type: 'palatal'     },
-        ],
-        vowels: [
-            { ipa: 'a', glyph: 'a', type: 'approximant' },
-            { ipa: 'e', glyph: 'e', type: 'approximant' },
-            { ipa: 'i', glyph: 'i', type: 'approximant' },
-            { ipa: 'o', glyph: 'o', type: 'approximant' },
-            { ipa: 'u', glyph: 'u', type: 'approximant' },
-            { ipa: 'ɨ', glyph: 'y', type: 'approximant' },
-        ],
-    },
-
-    Germanic: {
-        consonants: [
-            { ipa: 'p',  glyph: 'p',  type: 'alveolar'    },
-            { ipa: 'b',  glyph: 'b',  type: 'alveolar'    },
-            { ipa: 't',  glyph: 't',  type: 'alveolar'    },
-            { ipa: 'd',  glyph: 'd',  type: 'alveolar'    },
-            { ipa: 'k',  glyph: 'k',  type: 'alveolar'    },
-            { ipa: 'g',  glyph: 'g',  type: 'alveolar'    },
-            { ipa: 'f',  glyph: 'f',  type: 'fricative'   },
-            { ipa: 'v',  glyph: 'v',  type: 'fricative'   },
-            { ipa: 'θ',  glyph: 'þ',  type: 'fricative'   },
-            { ipa: 'ð',  glyph: 'ð',  type: 'fricative'   },
-            { ipa: 's',  glyph: 's',  type: 'fricative'   },
-            { ipa: 'z',  glyph: 'z',  type: 'fricative'   },
-            { ipa: 'ʃ',  glyph: 'sh', type: 'palatal'     },
-            { ipa: 'x',  glyph: 'ch', type: 'fricative'   },
-            { ipa: 'h',  glyph: 'h',  type: 'fricative'   },
-            { ipa: 'm',  glyph: 'm',  type: 'nasal'       },
-            { ipa: 'n',  glyph: 'n',  type: 'nasal'       },
-            { ipa: 'ŋ',  glyph: 'ng', type: 'nasal'       },
-            { ipa: 'l',  glyph: 'l',  type: 'approximant' },
-            { ipa: 'r',  glyph: 'r',  type: 'approximant' },
-            { ipa: 'j',  glyph: 'j',  type: 'palatal'     },
-            { ipa: 'w',  glyph: 'w',  type: 'approximant' },
-        ],
-        vowels: [
-            { ipa: 'a', glyph: 'a', type: 'approximant' },
-            { ipa: 'e', glyph: 'e', type: 'approximant' },
-            { ipa: 'i', glyph: 'i', type: 'approximant' },
-            { ipa: 'o', glyph: 'o', type: 'approximant' },
-            { ipa: 'u', glyph: 'u', type: 'approximant' },
-            { ipa: 'y', glyph: 'ü', type: 'approximant' },
-            { ipa: 'ø', glyph: 'ö', type: 'approximant' },
-            { ipa: 'æ', glyph: 'ä', type: 'approximant' },
-        ],
-    },
-
-    Celtic: {
-        consonants: [
-            { ipa: 'p',  glyph: 'p',  type: 'alveolar'    },
-            { ipa: 'b',  glyph: 'b',  type: 'alveolar'    },
-            { ipa: 't',  glyph: 't',  type: 'alveolar'    },
-            { ipa: 'd',  glyph: 'd',  type: 'alveolar'    },
-            { ipa: 'k',  glyph: 'k',  type: 'alveolar'    },
-            { ipa: 'g',  glyph: 'g',  type: 'alveolar'    },
-            { ipa: 'f',  glyph: 'f',  type: 'fricative'   },
-            { ipa: 'v',  glyph: 'v',  type: 'fricative'   },
-            { ipa: 's',  glyph: 's',  type: 'fricative'   },
-            { ipa: 'ʃ',  glyph: 'sh', type: 'palatal'     },
-            { ipa: 'x',  glyph: 'ch', type: 'fricative'   },
-            { ipa: 'ɣ',  glyph: 'gh', type: 'fricative'   },
-            { ipa: 'h',  glyph: 'h',  type: 'fricative'   },
-            { ipa: 'm',  glyph: 'm',  type: 'nasal'       },
-            { ipa: 'n',  glyph: 'n',  type: 'nasal'       },
-            { ipa: 'ŋ',  glyph: 'ng', type: 'nasal'       },
-            { ipa: 'l',  glyph: 'l',  type: 'approximant' },
-            { ipa: 'ɬ',  glyph: 'll', type: 'fricative'   },
-            { ipa: 'r',  glyph: 'r',  type: 'approximant' },
-            { ipa: 'j',  glyph: 'y',  type: 'palatal'     },
-            { ipa: 'w',  glyph: 'w',  type: 'approximant' },
-        ],
-        vowels: [
-            { ipa: 'a', glyph: 'a', type: 'approximant' },
-            { ipa: 'e', glyph: 'e', type: 'approximant' },
-            { ipa: 'i', glyph: 'i', type: 'approximant' },
-            { ipa: 'o', glyph: 'o', type: 'approximant' },
-            { ipa: 'u', glyph: 'u', type: 'approximant' },
-            { ipa: 'ə', glyph: 'e', type: 'approximant' },
-        ],
-    },
-
-    // Invented profile: fluid, palatal-heavy, no stops except p/t/k, many front vowels
-    Sylvan: {
-        consonants: [
-            { ipa: 'p',  glyph: 'p',  type: 'alveolar'    },
-            { ipa: 't',  glyph: 't',  type: 'alveolar'    },
-            { ipa: 'k',  glyph: 'k',  type: 'alveolar'    },
-            { ipa: 'f',  glyph: 'f',  type: 'fricative'   },
-            { ipa: 's',  glyph: 's',  type: 'fricative'   },
-            { ipa: 'ʃ',  glyph: 'sh', type: 'palatal'     },
-            { ipa: 'θ',  glyph: 'th', type: 'fricative'   },
-            { ipa: 'ɬ',  glyph: 'lh', type: 'fricative'   },
-            { ipa: 'm',  glyph: 'm',  type: 'nasal'       },
-            { ipa: 'n',  glyph: 'n',  type: 'nasal'       },
-            { ipa: 'ɲ',  glyph: 'ñ',  type: 'palatal'     },
-            { ipa: 'l',  glyph: 'l',  type: 'approximant' },
-            { ipa: 'ʎ',  glyph: 'ly', type: 'palatal'     },
-            { ipa: 'r',  glyph: 'r',  type: 'approximant' },
-            { ipa: 'j',  glyph: 'y',  type: 'palatal'     },
-            { ipa: 'w',  glyph: 'w',  type: 'approximant' },
-        ],
-        vowels: [
-            { ipa: 'a', glyph: 'a', type: 'approximant' },
-            { ipa: 'e', glyph: 'e', type: 'approximant' },
-            { ipa: 'ɛ', glyph: 'ë', type: 'approximant' },
-            { ipa: 'i', glyph: 'i', type: 'approximant' },
-            { ipa: 'o', glyph: 'o', type: 'approximant' },
-            { ipa: 'u', glyph: 'u', type: 'approximant' },
-            { ipa: 'y', glyph: 'ü', type: 'approximant' },
-            { ipa: 'ø', glyph: 'ö', type: 'approximant' },
-            { ipa: 'æ', glyph: 'æ', type: 'approximant' },
-        ],
-    },
-}
 
 export interface Phonology {
     vowels: Phoneme[];
@@ -315,8 +54,8 @@ export function generatePhonology(): Phonology {
         ]);
     }
 
-    const vowels = pickSubset(PhonemeProfiles[profile].vowels, 2);
-    const consonants = pickSubset(PhonemeProfiles[profile].consonants, 4);
+    const vowels = pickSubset(LanguageProfiles[profile].phonemes.vowels, 2);
+    const consonants = pickSubset(LanguageProfiles[profile].phonemes.consonants, 4);
 
     return {
         vowels,
@@ -348,28 +87,19 @@ function generateConstraints(vowels: Phoneme[], consonants: Phoneme[]): Phonotac
 }
 
 function pickRandomProfile() {
-    return pickRandom(Object.keys(PhonemeProfiles));
+    return pickRandom(Object.keys(LanguageProfiles));
 }
 
-function syllableToPhonemes(phono: Phonology, structure: string): Phoneme[] {
+export function syllableToPhonemes(phono: Phonology, structure?: string): Phoneme[] {
     const phonemes: Phoneme[] = [];
-    for (const c of structure) {
+    const effectiveStructure = structure || pickRandom(phono.allowedSyllableStructures)!;
+    for (const c of effectiveStructure) {
         switch (c) {
             case 'c': phonemes.push(pickRandom(phono.consonants)!); break;
             case 'v': phonemes.push(pickRandom(phono.vowels)!); break;
         }
     }
     return phonemes;
-}
-
-export function generateSyllable(phono: Phonology, structure?: string): string {
-    const s = structure ?? pickRandom(phono.allowedSyllableStructures)!;
-    for (let attempt = 0; attempt < 10; attempt++) {
-        const phonemes = syllableToPhonemes(phono, s);
-        if (phono.constraints.every(c => c.check(phonemes)))
-            return phonemes.join('');
-    }
-    return syllableToPhonemes(phono, s).join('');
 }
 
 export function generateWord(phono: Phonology): PWord {

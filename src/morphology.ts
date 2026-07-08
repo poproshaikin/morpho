@@ -1,9 +1,8 @@
 import {Categories, AlignmentPattern, CategoryInflection, CategoryName} from "./grammar";
 import {pickRandom, toBeOrNotToBe} from "./utils";
 import {MarkingStrategies, MarkingStrategy} from "./types";
-import {PWord} from "./vocabulary";
-import {generateSyllable, Phonology} from "./phonology";
-import {generateSentence} from "./syntax";
+import {PWord, pWordToStr} from "./vocabulary";
+import {Phonology, syllableToPhonemes} from "./phonology";
 
 export const Alignments = {
     'NominativeAccusative': {
@@ -71,10 +70,10 @@ export function generateMorphology(phono: Phonology): Morphology {
     }
 
     const pickRandomMarkers = (strategies: MarkingStrategy[]) => {
-        const markers: Partial<Record<MarkingStrategy, string>> = {};
+        const markers: Partial<Record<MarkingStrategy, PWord>> = {};
 
         for (const strategy of strategies) {
-            markers[strategy] = generateSyllable(phono);
+            markers[strategy] = syllableToPhonemes(phono, );
         }
 
         return markers;
@@ -86,7 +85,7 @@ export function generateMorphology(phono: Phonology): Morphology {
 
         for (const value of category.values) {
             const strategies = pickRandomStrategies(toBeOrNotToBe() ? 1 : 2);
-            const markers = pickRandomMarkers(strategies);
+            const markers = pickRandomMarkers(strategies, );
 
             result[value] = {
                 strategies,
@@ -123,10 +122,10 @@ export function inflectWord(
             const marker = inflection.markers[strategy];
             if (!marker) continue;
             switch (strategy) {
-                case 'Prefix':       result = marker + result; break;
-                case 'Suffix':       result = result + marker; break;
-                case 'Preposition':  result = marker + ' ' + result; break;
-                case 'Postposition': result = result + ' ' + marker; break;
+                case 'Prefix':       result = pWordToStr(marker) + result; break;
+                case 'Suffix':       result = result + pWordToStr(marker); break;
+                case 'Preposition':  result = pWordToStr(marker) + ' ' + result; break;
+                case 'Postposition': result = result + ' ' + pWordToStr(marker); break;
             }
         }
     }

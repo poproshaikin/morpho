@@ -1,4 +1,5 @@
 import {Constituent, MarkingStrategy, PartOfSpeech} from "./types";
+import {PWord} from "./vocabulary";
 
 export type GrammaticalCategory = {
     name: string;
@@ -32,5 +33,5 @@ export type AlignmentPattern = {
 
 export type CategoryInflection = {
     strategies: MarkingStrategy[];
-    markers: Partial<Record<MarkingStrategy, string>>;
+    markers: Partial<Record<MarkingStrategy, PWord>>;
 }
