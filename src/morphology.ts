@@ -1,6 +1,7 @@
 import {Categories, AlignmentPattern, CategoryInflection, CategoryName} from "./grammar";
 import {pickRandom, toBeOrNotToBe} from "./utils";
 import {MarkingStrategies, MarkingStrategy} from "./types";
+import {PWord} from "./vocabulary";
 import {generateSyllable, Phonology} from "./phonology";
 import {generateSentence} from "./syntax";
 
@@ -109,11 +110,11 @@ export function generateMorphology(phono: Phonology): Morphology {
 }
 
 export function inflectWord(
-    root: string,
+    root: PWord,
     categories: { category: CategoryName, value: string }[],
     morphology: Morphology
 ): string {
-    let result = root;
+    let result = root.map(p => p.glyph).join('');
     for (const { category, value } of categories) {
         const inflection = morphology.categories[category]?.[value];
         if (!inflection) continue;

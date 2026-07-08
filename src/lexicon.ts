@@ -1,15 +1,16 @@
 import {PartOfSpeech} from "./types";
 import {generateWords, Phonology} from "./phonology";
+import {PWord} from "./vocabulary";
 
 export type LexiconConfig = {
     rootsPerCategory: Record<PartOfSpeech, number>;
 }
 
 export type Lexicon = {
-    rootsByCategory: Record<PartOfSpeech, string[]>;
+    rootsByCategory: Record<PartOfSpeech, PWord[]>;
 }
 
-export function pickWordByPartOfSpeech(lexicon: Lexicon, partOfSpeech: PartOfSpeech): string {
+export function pickWordByPartOfSpeech(lexicon: Lexicon, partOfSpeech: PartOfSpeech): PWord {
     const words = lexicon.rootsByCategory[partOfSpeech];
     if (words.length === 0) {
         throw new Error(`No words available for part of speech: ${partOfSpeech}`);
@@ -18,8 +19,8 @@ export function pickWordByPartOfSpeech(lexicon: Lexicon, partOfSpeech: PartOfSpe
     return words[randomIndex];
 }
 
-export function pickWordsByPartOfSpeech(lexicon: Lexicon, partOfSpeech: PartOfSpeech, count: number): string[] {
-    const words = [] as string[];
+export function pickWordsByPartOfSpeech(lexicon: Lexicon, partOfSpeech: PartOfSpeech, count: number): PWord[] {
+    const words = [] as PWord[];
     for (let i = 0; i < count; i++) {
         words.push(pickWordByPartOfSpeech(lexicon, partOfSpeech));
     }
@@ -27,7 +28,7 @@ export function pickWordsByPartOfSpeech(lexicon: Lexicon, partOfSpeech: PartOfSp
 }
 
 export function makeLexiconWithParams(config: LexiconConfig, phono: Phonology): Lexicon {
-    const rootsByCategory: Record<PartOfSpeech, string[]> = {
+    const rootsByCategory: Record<PartOfSpeech, PWord[]> = {
         'Noun': generateWords(config.rootsPerCategory['Noun'], phono),
         'Verb': generateWords(config.rootsPerCategory['Verb'], phono),
         'Adjective': generateWords(config.rootsPerCategory['Adjective'], phono),

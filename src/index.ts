@@ -1,13 +1,14 @@
 import {Language} from "./language";
 
 const language = Language.generate();
-const words = language.generateSentence();
-const sentence = words.map(word => word.form).join(' ');
+language.print();
 
-console.log("full sentence: " + sentence);
-console.log(JSON.stringify(words, null, 2));
-console.log();
-console.log(JSON.stringify(language.phonology, null, 2));
-console.log(JSON.stringify(language.morphology, null, 2));
-console.log(language.lexicon)
-console.log(language.syntax)
+const getSentence = () => {
+    const words = language.generateSentence();
+    return words.map(word => word.form).join(' ');
+}
+
+for (let i = 0; i < 5; i++) {
+    console.log(getSentence());
+}
+

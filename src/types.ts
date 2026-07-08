@@ -1,3 +1,5 @@
+import {PWord} from "./vocabulary";
+
 export const MarkingStrategies = [
     'Prefix',
     'Suffix',
@@ -14,7 +16,7 @@ export const Constituents = ['Subject', 'Predicate', 'DirectObject', 'IndirectOb
 export type Constituent = typeof Constituents[number];
 
 export type Word = {
-    root: string;
+    root: PWord;
     form: string;
     partOfSpeech: PartOfSpeech;
     constituent: Constituent;

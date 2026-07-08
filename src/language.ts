@@ -2,7 +2,8 @@ import {Lexicon, LexiconConfig, makeLexiconWithParams, generateLexiconConfig} fr
 import {generateSentence, generateSyntaxConfig, Syntax} from "./syntax";
 import {generateMorphology, Morphology} from "./morphology";
 import {AlignmentPattern} from "./grammar";
-import {generatePhonology, Phonology} from "./phonology";
+import {generatePhonology, Phonology, PhonotacticRule} from "./phonology";
+import {PWord} from "./vocabulary";
 
 export interface LanguageParams {
     rootsPerCategory: LexiconConfig['rootsPerCategory'],
@@ -32,5 +33,40 @@ export class Language {
 
     generateSentence() {
         return generateSentence(this.lexicon, this.syntax, this.morphology);
+    }
+
+    print() {
+        const pword = (w: PWord) => w.map(p => p.glyph).join('');
+
+        console.log('=== Phonology ===');
+        console.log(`  Profile:     ${this.phonology.profile}`);
+        console.log(`  Consonants:  ${this.phonology.consonants.map(p => p.glyph).join(' ')}`);
+        console.log(`  Vowels:      ${this.phonology.vowels.map(p => p.glyph).join(' ')}`);
+        console.log(`  Syllables:   ${this.phonology.allowedSyllableStructures.join(', ')}`);
+        if (this.phonology.forbiddenClusters.length > 0)
+            console.log(`  Forbidden:   ${this.phonology.forbiddenClusters.map(([a, b]) => `${a}→${b}`).join(', ')}`);
+        if (this.phonology.constraints.length > 0)
+            console.log(`  Constraints: ${this.phonology.constraints.map(c => PhonotacticRule[c.type]).join(', ')}`);
+
+        console.log();
+        console.log('=== Lexicon ===');
+        for (const [pos, words] of Object.entries(this.lexicon.rootsByCategory)) {
+            const rendered = (words as unknown as PWord[]).map(pword).join(', ');
+            console.log(`  ${pos} (${words.length}): ${rendered}`);
+        }
+
+        console.log();
+        console.log('=== Syntax ===');
+        console.log(`  Order: ${this.syntax.order.join(' → ')}`);
+
+        console.log();
+        console.log('=== Morphology ===');
+        const alignment = Object.entries(this.morphology.alignment.constituentToValue)
+            .map(([k, v]) => `${k}=${v}`).join(', ');
+        console.log(`  Alignment: ${alignment}`);
+        for (const [cat, values] of Object.entries(this.morphology.categories)) {
+            if (!values) continue;
+            console.log(`  ${cat}: ${Object.keys(values).join(', ')}`);
+        }
     }
 }
