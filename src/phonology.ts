@@ -1,12 +1,11 @@
 import {pickRandom, pickRandomCount, pickSubset, toBeOrNotToBe} from "./utils";
 import {Phoneme, PWord} from "./vocabulary";
-import {LanguageProfiles} from "./profiles";
-
+import {LanguageProfile} from "./profiles";
 
 export interface Phonology {
     vowels: Phoneme[];
     consonants: Phoneme[];
-    profile: string;
+    profile: LanguageProfile;
     allowedSyllableStructures: string[];
     forbiddenClusters: [string, string][];
     constraints: PhonotacticConstraint[];
@@ -42,9 +41,8 @@ export class PhonotacticConstraint {
     }
 }
 
-export function generatePhonology(): Phonology {
-    const allowedSyllableStructures = generateSyllableStructures(1 + Math.floor(Math.random() * 5));
-    const profile = pickRandomProfile();
+export function generatePhonology(profile: LanguageProfile): Phonology {
+    const allowedSyllableStructures = generateSyllableStructures(1 + Math.floor(Math.random() * 5), profile);
     const forbiddenClustersCount = pickRandomCount(allowedSyllableStructures);
     const forbiddenClusters: [string, string][] = [];
     for (let i = 0; i < forbiddenClustersCount; i++) {
@@ -54,8 +52,8 @@ export function generatePhonology(): Phonology {
         ]);
     }
 
-    const vowels = pickSubset(LanguageProfiles[profile].phonemes.vowels, 2);
-    const consonants = pickSubset(LanguageProfiles[profile].phonemes.consonants, 4);
+    const vowels = pickSubset(profile.phonemes.vowels, 2);
+    const consonants = pickSubset(profile.phonemes.consonants, 4);
 
     return {
         vowels,
@@ -84,10 +82,6 @@ function generateConstraints(vowels: Phoneme[], consonants: Phoneme[]): Phonotac
         constraints.push(new PhonotacticConstraint(PhonotacticRule.NotSame, pickRandom(all)!));
 
     return constraints;
-}
-
-function pickRandomProfile() {
-    return pickRandom(Object.keys(LanguageProfiles));
 }
 
 export function syllableToPhonemes(phono: Phonology, structure?: string): Phoneme[] {
@@ -149,8 +143,8 @@ function allSyllableStructures(maxLength = 4): string[] {
     return result;
 }
 
-function generateSyllableStructures(count: number, maxLength = 4): string[] {
-    const pool = allSyllableStructures(maxLength);
+function generateSyllableStructures(count: number, profile?: LanguageProfile, maxLength = 4): string[] {
+    const pool = profile?.typicalSyllableStructures || allSyllableStructures(maxLength);
     const shuffled = pool.sort(() => Math.random() - 0.5);
     return shuffled.slice(0, Math.min(count, pool.length));
 }

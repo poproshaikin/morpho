@@ -40,6 +40,10 @@ export function makeLexiconWithParams(config: LexiconConfig, phono: Phonology): 
     };
 }
 
+export function generateLexicon(phono: Phonology): Lexicon {
+    return makeLexiconWithParams({ rootsPerCategory: generateLexiconConfig().rootsPerCategory }, phono);
+}
+
 export function generateLexiconConfig(): LexiconConfig {
     const rootsPerCategory: Record<PartOfSpeech, number> = {
         'Noun': Math.floor(Math.random() * 10) + 5,

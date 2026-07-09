@@ -3,6 +3,7 @@ import {Morphology, Alignments, inflectWord} from "./morphology";
 import {Constituent, Constituents, PartOfSpeech, Word} from "./types";
 import {getCategoriesFor, CategoryName} from "./grammar";
 import {pickRandom} from "./utils";
+import {LanguageProfile} from "./profiles";
 
 export interface Syntax {
     order: Constituent[];
@@ -12,9 +13,9 @@ export interface SyntaxConfig {
     order: Constituent[];
 }
 
-export function generateSyntaxConfig(): SyntaxConfig {
-    const shuffled = [...Constituents].sort(() => Math.random() - 0.5);
-    return { order: shuffled };
+export function generateSyntax(profile: LanguageProfile): Syntax {
+    const order = profile.typicalWordOrder ?? [...Constituents].sort(() => Math.random() - 0.5);
+    return { order };
 }
 
 const ConstituentToPartOfSpeech: Record<Constituent, PartOfSpeech> = {
