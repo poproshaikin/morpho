@@ -1,6 +1,7 @@
 import {Language} from "./language";
 
-const language = Language.generate();
+const name = 'Slavic'
+const language = Language.generate(name);
 language.print();
 
 const getSentence = () => {

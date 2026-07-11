@@ -4,7 +4,7 @@ import {generateMorphology, Morphology, inflectWord} from "./morphology";
 import {AlignmentPattern, Categories, CategoryName} from "./grammar";
 import {generatePhonology, Phonology, PhonotacticRule} from "./phonology";
 import {PWord} from "./vocabulary";
-import {LanguageProfile, pickRandomProfile} from "./profiles";
+import {LanguageProfile, LanguageProfiles, pickRandomProfile, ProfileName} from "./profiles";
 
 export interface LanguageParams {
     rootsPerCategory: LexiconConfig['rootsPerCategory'],
@@ -16,25 +16,24 @@ export interface LanguageParams {
 export class Language {
     constructor(
         public profileName: string,
-        public profile: LanguageProfile,
         public phonology: Phonology,
         public lexicon: Lexicon,
         public syntax: Syntax,
         public morphology: Morphology) {
     }
 
-    static generate() {
-        const [profileName, profile] = pickRandomProfile();
+    static generate(maybeProfileName?: ProfileName) {
+        const [profileName, profile] = maybeProfileName ? [maybeProfileName, LanguageProfiles[maybeProfileName]] : pickRandomProfile();
         const phonology = generatePhonology(profile);
         const lexicon = generateLexicon(phonology);
         const morphology = generateMorphology(phonology, profile);
         const syntax = generateSyntax(profile);
 
-        return new Language(profileName, profile, phonology, lexicon, syntax, morphology);
+        return new Language(profileName, phonology, lexicon, syntax, morphology);
     }
 
     generateSentence() {
-        return generateSentence(this.lexicon, this.syntax, this.morphology);
+        return generateSentence(this.phonology, this.lexicon, this.syntax, this.morphology);
     }
 
     print() {
@@ -49,6 +48,8 @@ export class Language {
             console.log(`  Forbidden:   ${this.phonology.forbiddenClusters.map(([a, b]) => `${a}→${b}`).join(', ')}`);
         if (this.phonology.constraints.length > 0)
             console.log(`  Constraints: ${this.phonology.constraints.map(c => PhonotacticRule[c.type]).join(', ')}`);
+        if (this.phonology.alternations.length > 0)
+            console.log(`  Alternations: ${this.phonology.alternations.map(a => `${a.from.glyph}→${a.to.glyph}`).join(', ')}`);
 
         console.log();
         console.log('=== Lexicon ===');
@@ -81,7 +82,7 @@ export class Language {
 
             for (const [valueName, inflection] of Object.entries(values)) {
                 if (!inflection || !sampleWord) continue;
-                const form = inflectWord(sampleWord, [{ category: catName as CategoryName, value: valueName }], this.morphology);
+                const form = inflectWord(sampleWord, [{ category: catName as CategoryName, value: valueName }], this.morphology, this.phonology.alternations);
                 const markers = inflection.strategies
                     .map(s => inflection.markers[s] ? pword(inflection.markers[s]!) : '∅')
                     .join('+');

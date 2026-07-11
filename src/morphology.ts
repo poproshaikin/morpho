@@ -2,7 +2,7 @@ import {Categories, AlignmentPattern, CategoryInflection, CategoryName} from "./
 import {pickRandom, toBeOrNotToBe} from "./utils";
 import {MarkingStrategies, MarkingStrategy} from "./types";
 import {PWord, pWordToStr} from "./vocabulary";
-import {Phonology, syllableToPhonemes} from "./phonology";
+import {AlternationRule, Phonology, syllableToPhonemes} from "./phonology";
 import {LanguageProfile} from "./profiles";
 
 export const Alignments = {
@@ -45,9 +45,10 @@ export function generateMorphology(phono: Phonology, profile: LanguageProfile): 
 export function inflectWord(
     root: PWord,
     categories: { category: CategoryName, value: string }[],
-    morphology: Morphology
+    morphology: Morphology,
+    alternations: AlternationRule[]
 ): string {
-    let stem = pWordToStr(root);
+    let stem: PWord = [...root];
     const adpositions: { strategy: 'Preposition' | 'Postposition', marker: PWord }[] = [];
 
     for (const { category, value } of categories) {
@@ -58,8 +59,8 @@ export function inflectWord(
             const marker = inflection.markers[strategy];
             if (!marker) continue;
             switch (strategy) {
-                case 'Prefix':       stem = pWordToStr(marker) + stem; break;
-                case 'Suffix':       stem = stem + pWordToStr(marker); break;
+                case 'Prefix':
+                case 'Suffix': stem = inflectWithAffix(stem, marker, strategy, alternations); break;
                 case 'Preposition':
                 case 'Postposition': adpositions.push({ strategy, marker }); break;
             }
@@ -70,8 +71,24 @@ export function inflectWord(
         strategy === 'Preposition'
             ? pWordToStr(marker) + ' ' + form
             : form + ' ' + pWordToStr(marker),
-        stem
+        pWordToStr(stem)
     );
+}
+
+function inflectWithAffix(stem: PWord, marker: PWord, strategy: 'Suffix' | 'Prefix', alternations: AlternationRule[]): PWord {
+    let [first, second] = strategy === 'Suffix' ? [stem, marker] : [marker, stem];
+
+    const last = first[first.length - 1];
+    const next = second[0];
+    const rule = alternations.find(
+        a => a.from === last && (a.triggers.length === 0 || a.triggers.some(t => t.phoneme === next))
+    );
+
+    if (rule && last && next) {
+        first = [...first.slice(0, -1), rule.to];
+    }
+
+    return [...first, ...second];
 }
 
 const pickRandomCategories = () => {

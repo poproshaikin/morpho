@@ -4,6 +4,7 @@ import {Constituent, Constituents, PartOfSpeech, Word} from "./types";
 import {getCategoriesFor, CategoryName} from "./grammar";
 import {pickRandom} from "./utils";
 import {LanguageProfile} from "./profiles";
+import {Phonology} from "./phonology";
 
 export interface Syntax {
     order: Constituent[];
@@ -25,7 +26,7 @@ const ConstituentToPartOfSpeech: Record<Constituent, PartOfSpeech> = {
     'IndirectObject': 'Noun',
 }
 
-export function generateSentence(lexicon: Lexicon, syntax: Syntax, morphology: Morphology): Word[] {
+export function generateSentence(phono: Phonology, lexicon: Lexicon, syntax: Syntax, morphology: Morphology): Word[] {
     const words: Word[] = [];
 
     for (let i = 0; i < syntax.order.length; i++) {
@@ -49,7 +50,7 @@ export function generateSentence(lexicon: Lexicon, syntax: Syntax, morphology: M
                 inflectionsToApply.push({ category: categoryName, value });
             }
 
-            const form = inflectWord(root, inflectionsToApply, morphology);
+            const form = inflectWord(root, inflectionsToApply, morphology, phono.alternations);
             return { root, form, constituent, partOfSpeech };
         })
 

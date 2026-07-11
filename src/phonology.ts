@@ -1,14 +1,14 @@
-import {pickRandom, pickRandomCount, pickSubset, toBeOrNotToBe} from "./utils";
-import {Phoneme, PWord} from "./vocabulary";
+import {pickRandom, pickRandomCount, pickSubset, pickWeighted, toBeOrNotToBe} from "./utils";
+import {ALTERNATION_WEIGHTS, Phoneme, PWord, TRANSITION_MATRIX} from "./vocabulary";
 import {LanguageProfile} from "./profiles";
 
 export interface Phonology {
     vowels: Phoneme[];
     consonants: Phoneme[];
-    profile: LanguageProfile;
     allowedSyllableStructures: string[];
     forbiddenClusters: [string, string][];
     constraints: PhonotacticConstraint[];
+    alternations: AlternationRule[];
 }
 
 export enum PhonotacticRule {
@@ -41,6 +41,20 @@ export class PhonotacticConstraint {
     }
 }
 
+export type AlternationTrigger = {
+    type: 'before' | 'after';
+    phoneme: Phoneme;
+}
+
+export class AlternationRule {
+    public constructor(
+        public from: Phoneme,
+        public to: Phoneme,
+        public triggers: AlternationTrigger[]
+    ) {
+    }
+}
+
 export function generatePhonology(profile: LanguageProfile): Phonology {
     const allowedSyllableStructures = generateSyllableStructures(1 + Math.floor(Math.random() * 5), profile);
     const forbiddenClustersCount = pickRandomCount(allowedSyllableStructures);
@@ -52,16 +66,16 @@ export function generatePhonology(profile: LanguageProfile): Phonology {
         ]);
     }
 
-    const vowels = pickSubset(profile.phonemes.vowels, 2);
-    const consonants = pickSubset(profile.phonemes.consonants, 4);
+    const vowels = pickSubset(profile.phonemes.vowels, 3);
+    const consonants = pickSubset(profile.phonemes.consonants, 8);
 
     return {
         vowels,
         consonants,
-        profile,
         allowedSyllableStructures,
         forbiddenClusters,
         constraints: generateConstraints(vowels, consonants),
+        alternations: generateAlternations(vowels, consonants)
     };
 }
 
@@ -78,22 +92,58 @@ function generateConstraints(vowels: Phoneme[], consonants: Phoneme[]): Phonotac
     if (Math.random() < 0.25)
         constraints.push(new PhonotacticConstraint(PhonotacticRule.OnlyEnd, toBeOrNotToBe() ? pickRandom(vowels)! : pickRandom(consonants)!));
 
-    if (Math.random() < 0.25)
+    if (Math.random() < 0.65)
         constraints.push(new PhonotacticConstraint(PhonotacticRule.NotSame, pickRandom(all)!));
 
     return constraints;
 }
 
-export function syllableToPhonemes(phono: Phonology, structure?: string): Phoneme[] {
+function generateAlternations(vowels: Phoneme[], consonants: Phoneme[]): AlternationRule[] {
+    const count = pickRandomCount({ length: 5});
+    const rules: AlternationRule[] = [];
+
+    for (let i = 0; i < count; i++) {
+        const from = pickRandom([...vowels, ...consonants])!;
+        const to = pickNextPhoneme(pickRandom([[...vowels], [...consonants]]), from);
+
+        const triggerCount = pickRandomCount({ length: 3 });
+        const triggers: AlternationTrigger[] = [];
+
+        for (let j = 0; j < triggerCount; j++) {
+            triggers.push({
+                type: toBeOrNotToBe() ? 'before' : 'after',
+                phoneme: pickRandom([...vowels, ...consonants])!
+            });
+        }
+
+        rules.push({ from, to, triggers });
+    }
+
+    return rules;
+}
+
+
+export function syllableToPhonemes(phono: Phonology, structure?: string, last?: Phoneme): Phoneme[] {
     const phonemes: Phoneme[] = [];
     const effectiveStructure = structure || pickRandom(phono.allowedSyllableStructures)!;
+
     for (const c of effectiveStructure) {
-        switch (c) {
-            case 'c': phonemes.push(pickRandom(phono.consonants)!); break;
-            case 'v': phonemes.push(pickRandom(phono.vowels)!); break;
-        }
+        // choose next phoneme by c/v, which is compatible with last phoneme type, using transition matrix
+        const next = pickNextPhoneme(c === 'c' ? phono.consonants : phono.vowels, last);
+        phonemes.push(next);
     }
     return phonemes;
+}
+
+function pickNextPhoneme(candidates: Phoneme[], last?: Phoneme): Phoneme {
+    const transitions = last ? TRANSITION_MATRIX[last.type] : undefined;
+
+    const weighted = candidates.map(p => ({
+        ...p,
+        weight: (transitions?.[p.type] ?? 1) * (p.weight ?? 1),
+    }));
+
+    return pickWeighted(weighted)!;
 }
 
 export function generateWord(phono: Phonology): PWord {
