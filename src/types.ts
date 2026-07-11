@@ -20,5 +20,6 @@ export type Word = {
     form: string;
     partOfSpeech: PartOfSpeech;
     constituent: Constituent;
+    inflections: { category: string, value: string }[];
 }
 

@@ -2,6 +2,7 @@ import {PhonemeProfile} from "./vocabulary";
 import {Constituent, MarkingStrategy} from "./types";
 import {pickRandom} from "./utils";
 import {CategoryName} from "./grammar";
+import {AlternationRule} from "./phonology";
 
 export type LanguageProfile = {
     // morphologicalType: 'agglutinative' | 'fusional' | 'isolating'
@@ -11,16 +12,17 @@ export type LanguageProfile = {
     typicalSyllableStructures?: string[];
     typicalStrategies?: Partial<Record<MarkingStrategy, number>>;
     typicalCategories?: CategoryName[];
+    typicalAlternations?: { fromIpa: string, toIpa: string}[]
 }
 
-export function pickRandomProfile(): [string, LanguageProfile] {
+export function pickRandomProfile(): [ProfileName, LanguageProfile] {
     const name = pickRandom(Object.keys(LanguageProfiles))! as ProfileName;
     return [name, LanguageProfiles[name]];
 }
 
 export const LanguageProfiles = {
     Slavic: {
-        typicalSyllableStructures: ['ccv', 'cv', 'cvv', 'vcv', 'cvc', 'v', 'cvcc'],
+        typicalSyllableStructures: ['cv', 'cvv', 'vcv', 'cvc', 'v'],
         typicalWordOrder: ['Subject', 'Predicate', 'IndirectObject', 'DirectObject'],
         typicalAlignment: 'NominativeAccusative',
         typicalStrategies: {
@@ -28,6 +30,13 @@ export const LanguageProfiles = {
             Suffix: 0.7
         },
         typicalCategories: ['Case', 'Tense'],
+        typicalAlternations: [
+            { fromIpa: 'k',  toIpa: 'tʃ' },  // k → č
+            { fromIpa: 'g',  toIpa: 'ʒ'  },  // g → ž
+            { fromIpa: 's',  toIpa: 'ʃ'  },  // s → š
+            { fromIpa: 'z',  toIpa: 'ʒ'  },  // z → ž
+            { fromIpa: 'n',  toIpa: 'ɲ'  },  // n → ń
+        ],
         phonemes: {
             consonants: [
                 { ipa: 'p',  glyph: 'p',  type: 'alveolar',    weight: 3 },
@@ -39,7 +48,6 @@ export const LanguageProfiles = {
                 { ipa: 'ts', glyph: 'c',  type: 'alveolar',    weight: 2 },
                 { ipa: 'tʃ', glyph: 'č',  type: 'palatal',     weight: 2 },
                 { ipa: 'dʒ', glyph: 'dž', type: 'palatal',     weight: 1 },
-                { ipa: 'f',  glyph: 'f',  type: 'fricative',   weight: 2 },
                 { ipa: 'v',  glyph: 'v',  type: 'fricative',   weight: 3 },
                 { ipa: 's',  glyph: 's',  type: 'fricative',   weight: 3 },
                 { ipa: 'z',  glyph: 'z',  type: 'fricative',   weight: 3 },
@@ -74,6 +82,11 @@ export const LanguageProfiles = {
             Postposition: 0.1
         },
         typicalCategories: ['Case', 'Tense'],
+        typicalAlternations: [
+            { fromIpa: 'k',  toIpa: 'tʃ' },  // k → č (before front vowels)
+            { fromIpa: 'g',  toIpa: 'dʒ' },  // g → j
+            { fromIpa: 'n',  toIpa: 'ŋ'  },  // n → ng (velar nasal assimilation)
+        ],
         phonemes: {
             consonants: [
                 { ipa: 'p',  glyph: 'p',  type: 'alveolar'    },

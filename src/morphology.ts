@@ -151,7 +151,7 @@ const pickRandomMarkers = (strategies: MarkingStrategy[], phono: Phonology) => {
     const markers: Partial<Record<MarkingStrategy, PWord>> = {};
 
     for (const strategy of strategies) {
-        markers[strategy] = syllableToPhonemes(phono, );
+        markers[strategy] = syllableToPhonemes(phono);
     }
 
     return markers;

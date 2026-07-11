@@ -69,13 +69,16 @@ export function generatePhonology(profile: LanguageProfile): Phonology {
     const vowels = pickSubset(profile.phonemes.vowels, 3);
     const consonants = pickSubset(profile.phonemes.consonants, 8);
 
+    const constraints = generateConstraints(vowels, consonants);
+    const alternations = generateAlternations(vowels, consonants, profile);
+
     return {
         vowels,
         consonants,
         allowedSyllableStructures,
         forbiddenClusters,
-        constraints: generateConstraints(vowels, consonants),
-        alternations: generateAlternations(vowels, consonants)
+        constraints,
+        alternations
     };
 }
 
@@ -98,11 +101,23 @@ function generateConstraints(vowels: Phoneme[], consonants: Phoneme[]): Phonotac
     return constraints;
 }
 
-function generateAlternations(vowels: Phoneme[], consonants: Phoneme[]): AlternationRule[] {
-    const count = pickRandomCount({ length: 5});
+function generateAlternations(vowels: Phoneme[], consonants: Phoneme[], profile?: LanguageProfile): AlternationRule[] {
+    const count = pickRandomCount({ length: 10 });
+    const typicalAlternations = (profile?.typicalAlternations ?? [])
+        .map(({ fromIpa, toIpa }) => ({
+            from: [...vowels, ...consonants].find(p => p.ipa === fromIpa),
+            to:   [...vowels, ...consonants].find(p => p.ipa === toIpa),
+        }))
+        .filter(r => r.from && r.to) as AlternationRule[]  // только если оба есть в инвентаре
+
     const rules: AlternationRule[] = [];
 
     for (let i = 0; i < count; i++) {
+        if (typicalAlternations.length > 1 && Math.random() < 0.5) {
+            rules.push(pickRandom(typicalAlternations)!);
+            continue;
+        }
+
         const from = pickRandom([...vowels, ...consonants])!;
         const to = pickNextPhoneme(pickRandom([[...vowels], [...consonants]]), from);
 
@@ -151,16 +166,19 @@ export function generateWord(phono: Phonology): PWord {
 
     for (let attempt = 0; attempt < 10; attempt++) {
         const phonemes: Phoneme[] = [];
-        let prevStructure: string | null = null;
+        let prevStructure: string | undefined = undefined;
+        let lastPhoneme: Phoneme | undefined = undefined;
 
         for (let i = 0; i < syllablesCount; i++) {
             const allowedStructures = phono.allowedSyllableStructures.filter(s =>
-                prevStructure === null ||
+                !prevStructure ||
                 !phono.forbiddenClusters.some(([a, b]) => a === prevStructure && b === s)
             );
             const structure = pickRandom(allowedStructures.length > 0 ? allowedStructures : phono.allowedSyllableStructures)!;
-            phonemes.push(...syllableToPhonemes(phono, structure));
+            const pword = syllableToPhonemes(phono, structure, lastPhoneme);
+            phonemes.push(...pword);
             prevStructure = structure;
+            lastPhoneme = pword[pword.length - 1];
         }
 
         if (!phono.constraints || phono.constraints.every(c => c.check(phonemes)))

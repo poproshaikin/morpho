@@ -49,7 +49,12 @@ export class Language {
         if (this.phonology.constraints.length > 0)
             console.log(`  Constraints: ${this.phonology.constraints.map(c => PhonotacticRule[c.type]).join(', ')}`);
         if (this.phonology.alternations.length > 0)
-            console.log(`  Alternations: ${this.phonology.alternations.map(a => `${a.from.glyph}→${a.to.glyph}`).join(', ')}`);
+            console.log(`  Alternations: ${this.phonology.alternations.map(a => {
+                const triggers = a.triggers?.length > 0
+                    ? ` (${a.triggers.map(t => `${t.type} ${t.phoneme.glyph}`).join(', ')})`
+                    : '';
+                return `${a.from.glyph}→${a.to.glyph}${triggers}`;
+            }).join(', ')}`);
 
         console.log();
         console.log('=== Lexicon ===');
@@ -88,6 +93,19 @@ export class Language {
                     .join('+');
                 console.log(`    ${valueName.padEnd(14)} ${pword(sampleWord)} → ${form.padEnd(16)} (${markers})`);
             }
+        }
+
+        console.log();
+        console.log('=== Sentences ===');
+        for (let i = 0; i < 3; i++) {
+            const words = this.generateSentence();
+            console.log(`  ${words.map(w => w.form).join(' ')}`);
+            for (const w of words) {
+                const root = pword(w.root);
+                const inflections = w.inflections.map(inf => `${inf.category}=${inf.value}`).join(', ');
+                console.log(`    ${root.padEnd(16)} ${w.partOfSpeech.padEnd(10)} ${w.constituent.padEnd(16)} ${inflections}`);
+            }
+            console.log();
         }
     }
 }

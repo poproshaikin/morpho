@@ -51,7 +51,7 @@ export function generateSentence(phono: Phonology, lexicon: Lexicon, syntax: Syn
             }
 
             const form = inflectWord(root, inflectionsToApply, morphology, phono.alternations);
-            return { root, form, constituent, partOfSpeech };
+            return { root, form, constituent, partOfSpeech, inflections: inflectionsToApply };
         })
 
         inflicted.forEach(word => words.push(word));
