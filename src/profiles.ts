@@ -12,7 +12,7 @@ export type LanguageProfile = {
     typicalSyllableStructures?: string[];
     typicalStrategies?: Partial<Record<MarkingStrategy, number>>;
     typicalCategories?: CategoryName[];
-    typicalAlternations?: { fromIpa: string, toIpa: string}[]
+    typicalAlternations?: { fromIpa: string, toIpa: string }[]
 }
 
 export function pickRandomProfile(): [ProfileName, LanguageProfile] {

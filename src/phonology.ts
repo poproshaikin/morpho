@@ -1,5 +1,5 @@
 import {pickRandom, pickRandomCount, pickSubset, pickWeighted, toBeOrNotToBe} from "./utils";
-import {ALTERNATION_WEIGHTS, Phoneme, PWord, TRANSITION_MATRIX} from "./vocabulary";
+import {ALTERNATION_WEIGHTS, Phoneme, PhonemeType, PWord, TRANSITION_MATRIX} from "./vocabulary";
 import {LanguageProfile} from "./profiles";
 
 export interface Phonology {
@@ -107,36 +107,41 @@ function generateAlternations(vowels: Phoneme[], consonants: Phoneme[], profile?
         .map(({ fromIpa, toIpa }) => ({
             from: [...vowels, ...consonants].find(p => p.ipa === fromIpa),
             to:   [...vowels, ...consonants].find(p => p.ipa === toIpa),
+            triggers: [] as AlternationTrigger[],
         }))
-        .filter(r => r.from && r.to) as AlternationRule[]  // только если оба есть в инвентаре
+        .filter(r => r.from && r.to) as AlternationRule[]
 
     const rules: AlternationRule[] = [];
 
     for (let i = 0; i < count; i++) {
         if (typicalAlternations.length > 1 && Math.random() < 0.5) {
+            console.log(' picked typical alternation rule')
             rules.push(pickRandom(typicalAlternations)!);
             continue;
         }
 
-        const from = pickRandom([...vowels, ...consonants])!;
-        const to = pickNextPhoneme(pickRandom([[...vowels], [...consonants]]), from);
-
-        const triggerCount = pickRandomCount({ length: 3 });
-        const triggers: AlternationTrigger[] = [];
-
-        for (let j = 0; j < triggerCount; j++) {
-            triggers.push({
-                type: toBeOrNotToBe() ? 'before' : 'after',
-                phoneme: pickRandom([...vowels, ...consonants])!
-            });
-        }
-
-        rules.push({ from, to, triggers });
+        rules.push(generateRandomAlternation(vowels, consonants));
     }
 
     return rules;
 }
 
+function generateRandomAlternation(vowels: Phoneme[], consonants: Phoneme[]) {
+    const from = pickRandom([...vowels, ...consonants])!;
+    const to = pickNextPhoneme(pickRandom([[...vowels], [...consonants]]), from);
+
+    const triggerCount = pickRandomCount({ length: 3 });
+    const triggers: AlternationTrigger[] = [];
+
+    for (let j = 0; j < triggerCount; j++) {
+        triggers.push({
+            type: toBeOrNotToBe() ? 'before' : 'after',
+            phoneme: pickRandom([...vowels, ...consonants])!
+        });
+    }
+
+    return { from, to, triggers };
+}
 
 export function syllableToPhonemes(phono: Phonology, structure?: string, last?: Phoneme): Phoneme[] {
     const phonemes: Phoneme[] = [];
@@ -150,8 +155,11 @@ export function syllableToPhonemes(phono: Phonology, structure?: string, last?: 
     return phonemes;
 }
 
-function pickNextPhoneme(candidates: Phoneme[], last?: Phoneme): Phoneme {
-    const transitions = last ? TRANSITION_MATRIX[last.type] : undefined;
+function pickNextPhoneme(
+    candidates: Phoneme[],
+    last?: Phoneme
+): Phoneme {
+    const transitions = last ? ALTERNATION_WEIGHTS[last.type] : undefined;
 
     const weighted = candidates.map(p => ({
         ...p,

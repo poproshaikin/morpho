@@ -81,7 +81,7 @@ function inflectWithAffix(stem: PWord, marker: PWord, strategy: 'Suffix' | 'Pref
     const last = first[first.length - 1];
     const next = second[0];
     const rule = alternations.find(
-        a => a.from === last && (a.triggers.length === 0 || a.triggers.some(t => t.phoneme === next))
+        a => a.from.ipa === last.ipa && (a.triggers.length === 0 || a.triggers.some(t => t.phoneme.ipa === next.ipa))
     );
 
     if (rule && last && next) {
